@@ -7,7 +7,15 @@ public class PostfixFilter implements TextFilter{
         if(strIn == null){
             return null;
         }
-        String out = strIn.replace("'m", "").replace("'ll", "").replace("'ve", "");
+        String out = strIn
+                .replace("'m", "")         // i'm
+                .replace("'s", "")         // dady's
+                .replace("'d", "")         // I'd
+                .replace("'ll", "")        // He'll
+                .replace("n't", "")        // I don't
+                .replace("'ve", "")        // I've
+                .replace("'re", "")        // You're
+                ;       
                 
         if(out.trim().isEmpty()){
             return null;

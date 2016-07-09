@@ -7,7 +7,14 @@ public class BracketFilter implements TextFilter{
         if(strIn == null){
             return null;
         }
-        String out = strIn.replace("(", "").replace(")", "").replace("[", "").replace("]", "");
+        String out = strIn
+                .replace("(", "")
+                .replace(")", "")
+                .replace("[", "")
+                .replace("]", "")
+                .replace("<", "")
+                .replace(">", "")
+                .replace("--", "");
                         
         if(out.trim().isEmpty()){
             return null;

@@ -15,6 +15,7 @@ import ru.babin.langlearn.filter.PostfixFilter;
 import ru.babin.langlearn.filter.QuestionFilter;
 import ru.babin.langlearn.filter.QuoteSFilter;
 import ru.babin.langlearn.filter.SpecialCharsFilter;
+import ru.babin.langlearn.filter.SymbolsOnlyFilter;
 import ru.babin.langlearn.filter.TextFilter;
 import ru.babin.langlearn.filter.TrimFilter;
 
@@ -23,16 +24,19 @@ public class FileProcessor {
     private List <TextFilter> filters = new LinkedList<>();
     
     public FileProcessor(){
+        
         filters.add(new TrimFilter());
+        filters.add(new SymbolsOnlyFilter());
         filters.add(new PostfixFilter());
-        filters.add(new BracketFilter());
-        filters.add(new DoubleQuoteFilter());
-        filters.add(new SpecialCharsFilter());
-        filters.add(new QuoteSFilter());
-        filters.add(new QuestionFilter());
-        filters.add(new NegationFilter());
         filters.add(new OneCharFilter());
-        filters.add(new NumberFilter());
+        //filters.add(new BracketFilter());
+        //filters.add(new DoubleQuoteFilter());
+        //filters.add(new SpecialCharsFilter());
+        //filters.add(new QuoteSFilter());
+        //filters.add(new QuestionFilter());
+        //filters.add(new NegationFilter());
+        
+        //filters.add(new NumberFilter());
     }
     
     public List <String> process(String fileName) throws FileNotFoundException{
@@ -58,7 +62,7 @@ public class FileProcessor {
         
     }
 
-    private String doFilter(String token) {
+    String doFilter(String token) {
         String out = token;
         for(TextFilter filter: filters){
             out = filter.filter(out);
