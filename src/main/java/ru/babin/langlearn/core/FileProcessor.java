@@ -6,15 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
-import ru.babin.langlearn.filter.BracketFilter;
-import ru.babin.langlearn.filter.DoubleQuoteFilter;
-import ru.babin.langlearn.filter.NegationFilter;
-import ru.babin.langlearn.filter.NumberFilter;
+import ru.babin.langlearn.filter.HtmlTagFilter;
 import ru.babin.langlearn.filter.OneCharFilter;
 import ru.babin.langlearn.filter.PostfixFilter;
-import ru.babin.langlearn.filter.QuestionFilter;
-import ru.babin.langlearn.filter.QuoteSFilter;
-import ru.babin.langlearn.filter.SpecialCharsFilter;
 import ru.babin.langlearn.filter.SymbolsOnlyFilter;
 import ru.babin.langlearn.filter.TextFilter;
 import ru.babin.langlearn.filter.TrimFilter;
@@ -22,6 +16,10 @@ import ru.babin.langlearn.filter.TrimFilter;
 public class FileProcessor {
     
     private List <TextFilter> filters = new LinkedList<>();
+    
+    private HtmlTagFilter htmlTagFilter = new HtmlTagFilter();
+    
+    private String loadedFilePath = "";
     
     public FileProcessor(){
         
@@ -39,17 +37,14 @@ public class FileProcessor {
         //filters.add(new NumberFilter());
     }
     
-    public List <String> process(String fileName) throws FileNotFoundException{
+    public List <String> process(String filePath) throws FileNotFoundException{
+        loadedFilePath = filePath;
         List <String> res = new LinkedList<>();
-        
-        try(Scanner s = new Scanner(new File(fileName))){
-            while(s.hasNext()){
-                String token = s.next().toLowerCase();
-                                
-                String filtered = doFilter(token);
-                if(filtered != null){
-                    if(!res.contains(filtered)){
-                        res.add(filtered);
+        try(Scanner s = new Scanner(new File(filePath))){
+            while(s.hasNextLine()){
+                for(String str : processLine(s.nextLine())){
+                    if(!res.contains(str)){
+                        res.add(str);
                     }
                 }
             }
@@ -58,18 +53,34 @@ public class FileProcessor {
         return res;
     }
     
-    public void saveResult(String fileName){
-        
+    private List <String> processLine(String lineIn){
+        String line = htmlTagFilter.filter(lineIn);
+        List <String> res = new LinkedList<>();
+        if(line == null || line.isEmpty()){
+            return res;
+        }
+        for(String token : line.split(" ")){
+            String filtered = doFilter(token);
+            if(filtered != null){
+                if(!res.contains(filtered)){
+                    res.add(filtered.toLowerCase());
+                }
+            }
+        }
+        return res;
     }
-
-    String doFilter(String token) {
+    
+    private String doFilter(String token) {
         String out = token;
         for(TextFilter filter: filters){
             out = filter.filter(out);
         }
-        
         return out;
     }
+    
+    public String getFilePath(){
+        return loadedFilePath;
+    } 
     
     
 }

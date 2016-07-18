@@ -1,51 +1,65 @@
 package ru.babin.langlearn.core;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
+import ru.babin.langlearn.ui.FrmMain;
+
+
+/**
+ * 
+ * @author Aelxander Babin
+ * @email alexander.babin@gmail.com
+ *
+ */
 public class Mediator {
     
-    // ------------------------------------------------------------------------------------------------------------------
-    private javax.swing.JList<String> lstUnknownWords;
-    public void setLstUnknownWords(javax.swing.JList<String> lstUnknownWords){this.lstUnknownWords = lstUnknownWords;}
-    
-    private javax.swing.JLabel lblUnknownWordsCount;
-    public void setLblUnknownWordsCount(javax.swing.JLabel lblUnknownWordsCount){this.lblUnknownWordsCount = lblUnknownWordsCount;}
-    
-    private javax.swing.JLabel lblVocabularyInfo;
-    public void setLblVocabularyInfo(javax.swing.JLabel lblVocabularyInfo){this.lblVocabularyInfo = lblVocabularyInfo;}
-    // ------------------------------------------------------------------------------------------------------------------
-    
+    // UI components -----------------------------------------------------
+    private FrmMain form;
+    public void setFrmMain(FrmMain frm){form = frm;}
+    // -------------------------------------------------------------------
+            
     Vocabulary vocabulary = new Vocabulary();
+    
+    FileProcessor fileProcessor = new FileProcessor();
     
     public void init(){
         try {
             vocabulary.load();
-            lblVocabularyInfo.setText(vocabulary.getVocabulary().size() + "");
+            form.eventVocabularyLoaded(vocabulary.getWords().size());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            showErrorDialog("Unknown error: " + e.getMessage());
         }
     }
-    
-            
-    public void eventNewLoadedWords(List <String> words){
-        int foundWordsCount = words.size();
                 
-        List <String> onlyUnknownWords = new LinkedList<>();
-        for(String word : words){
-            if(!vocabulary.getVocabulary().contains(word.toLowerCase())){
-                onlyUnknownWords.add(word);
-            }
+    public void eventAddToVocabulary(List <String> vals){
+        try {
+            vocabulary.add(vals, fileProcessor.getFilePath());
+        } catch (FileNotFoundException e) {
+            showErrorDialog("Vocabulary file: " + fileProcessor.getFilePath() + " does not exist!");
         }
-        lstUnknownWords.setListData(onlyUnknownWords.toArray(new String[onlyUnknownWords.size()]));
-        setUnknownWordsCounter(onlyUnknownWords.size(), foundWordsCount);
     }
     
-    public void setUnknownWordsCounter(int unknownWords , int totalWords){
-        lblUnknownWordsCount.setText(String.valueOf(unknownWords) + " from " + totalWords);
+    public void eventOpenNewFile(String filePath){
+        try {
+            List<String> fileWords = fileProcessor.process(filePath);
+            List <String> unknownWords = vocabulary.obtainUnknownWords(fileWords);
+            form.eventNewLoadedFile(filePath, unknownWords, fileWords.size());
+        } catch (FileNotFoundException e) {
+            showErrorDialog("File: " + filePath + "  does not exist!");
+        }
     }
-       
+            
+    public String getFileName(){
+        return fileProcessor.getFilePath();
+    }
+     
+    private void showErrorDialog(String mes){
+        JOptionPane.showMessageDialog(null, mes, "ERROR", JOptionPane.ERROR_MESSAGE);
+    }
         
 }

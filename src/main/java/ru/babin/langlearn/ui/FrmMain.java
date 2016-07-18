@@ -3,48 +3,132 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ru.babin.langlearn.ui2;
+package ru.babin.langlearn.ui;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
-import ru.babin.langlearn.core.FileProcessor;
 import ru.babin.langlearn.core.Mediator;
 import ru.babin.langlearn.util.ConfGlobal;
 
 /**
  *
- * @author alexander
+ * @author Alexander Babin
+ * @email alexander.babin@gmail.com
+ * 
+ * 
  */
 public class FrmMain extends javax.swing.JFrame {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
     
-    JFileChooser fileChooser = new JFileChooser();
-    FileProcessor fileProcessor = new FileProcessor();
-    final Mediator mediator = new Mediator();
+    JFileChooser fileChooser;
+    Mediator     mediator;
+        
     
     /**
      * Creates new form FrmMain
      */
     public FrmMain() {
         initComponents();
+    }
+    
+    public void postConstruct(){
+        fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File(ConfGlobal.getAppDir()));
         
-        mediator.setLstUnknownWords(lstUnknownWords);
-        mediator.setLblUnknownWordsCount(lblUnknownWordsCount);
-        mediator.setLblVocabularyInfo(lblVocabularyInfo);
-        mediator.init();
+        pnlImport.setVisible(false);
         
+        mediator = new Mediator();
+        mediator.setFrmMain(this);
+        mediator.init();
+    }
+            
+    public void eventNewLoadedFile(String filePath , List <String> unknownWords, int totalWords){
+        lstUnknownWords.setListData(unknownWords.toArray(new String[unknownWords.size()]));
+        lblUnknownWordsCount.setText(String.valueOf(unknownWords.size()) + " from " + totalWords);
+        lblOpenFile.setText("Opened file: " + filePath);
+    }
+    
+    public void eventVocabularyLoaded(int vocabularySize){
+        lblVocabularyInfo.setText(vocabularySize + "");
     }
 
+    
+    private void mnuItemOpenFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuItemOpenFileActionPerformed
+        String filename= "";
+        String dir = "";
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+          filename = fileChooser.getSelectedFile().getName();
+          dir = fileChooser.getCurrentDirectory().toString();
+        }
+                        
+        if(!filename.isEmpty()){
+            mediator.eventOpenNewFile(dir + File.separator + filename);
+        }
+        
+    }//GEN-LAST:event_mnuItemOpenFileActionPerformed
+    
+    
+    private void btnAddToVocActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        int [] indexes = lstUnknownWords.getSelectedIndices(); 
+        List <String> list = new ArrayList<>(indexes.length);
+        if(indexes.length > 0){
+            for(int i : indexes){
+                list.add(lstUnknownWords.getModel().getElementAt(i));
+            }
+            mediator.eventAddToVocabulary(list);
+            mediator.init();
+            mediator.eventOpenNewFile(mediator.getFileName());
+        }
+    }
+
+    private void lstUnknownWordsValueChanged(javax.swing.event.ListSelectionEvent evt) {                                             
+        int [] indexes = lstUnknownWords.getSelectedIndices(); 
+        if(indexes.length > 0){
+            pnlImport.setVisible(true);
+            lblImportCount.setText("" + indexes.length);
+        }else{
+            pnlImport.setVisible(false);
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /* =======================================================================================================
+     * =======================================================================================================
+     * =======================================================================================================
+     * =======================================================================================================
+     * =======================================================================================================
+     * =======================================================================================================
+     */
+     
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -59,6 +143,10 @@ public class FrmMain extends javax.swing.JFrame {
         lblUnknownWords = new javax.swing.JLabel();
         lblUnknownWordsCount = new javax.swing.JLabel();
         lblOpenFile = new javax.swing.JLabel();
+        pnlImport = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        lblImportCount = new javax.swing.JLabel();
+        btnAddToVoc = new javax.swing.JButton();
         pnlBottom = new javax.swing.JPanel();
         lblVocabulary = new javax.swing.JLabel();
         lblVocabularyInfo = new javax.swing.JLabel();
@@ -79,6 +167,11 @@ public class FrmMain extends javax.swing.JFrame {
         lstUnknownWords.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         lstUnknownWords.setToolTipText("Unknown words list");
         lstUnknownWords.setMaximumSize(new java.awt.Dimension(36, 0));
+        lstUnknownWords.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                lstUnknownWordsValueChanged(evt);
+            }
+        });
         scrlUnknownWords.setViewportView(lstUnknownWords);
 
         lblUnknownWords.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
@@ -91,6 +184,47 @@ public class FrmMain extends javax.swing.JFrame {
         lblOpenFile.setForeground(new java.awt.Color(0, 0, 0));
         lblOpenFile.setText("...");
 
+        jLabel1.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabel1.setText("Selected: ");
+
+        lblImportCount.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        lblImportCount.setText("0");
+
+        btnAddToVoc.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        btnAddToVoc.setText("Add to vocabulary");
+        btnAddToVoc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddToVocActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pnlImportLayout = new javax.swing.GroupLayout(pnlImport);
+        pnlImport.setLayout(pnlImportLayout);
+        pnlImportLayout.setHorizontalGroup(
+            pnlImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlImportLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnAddToVoc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(pnlImportLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblImportCount, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 37, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        pnlImportLayout.setVerticalGroup(
+            pnlImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlImportLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlImportLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(lblImportCount))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnAddToVoc)
+                .addContainerGap(131, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout pnlMiddleLayout = new javax.swing.GroupLayout(pnlMiddle);
         pnlMiddle.setLayout(pnlMiddleLayout);
         pnlMiddleLayout.setHorizontalGroup(
@@ -98,14 +232,17 @@ public class FrmMain extends javax.swing.JFrame {
             .addGroup(pnlMiddleLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlMiddleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblOpenFile, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                    .addComponent(lblOpenFile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(pnlMiddleLayout.createSequentialGroup()
                         .addGroup(pnlMiddleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(scrlUnknownWords, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(pnlMiddleLayout.createSequentialGroup()
                                 .addComponent(lblUnknownWords)
                                 .addGap(28, 28, 28)
-                                .addComponent(lblUnknownWordsCount, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(lblUnknownWordsCount, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(pnlMiddleLayout.createSequentialGroup()
+                                .addComponent(scrlUnknownWords, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pnlImport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -119,7 +256,9 @@ public class FrmMain extends javax.swing.JFrame {
                     .addComponent(lblUnknownWords)
                     .addComponent(lblUnknownWordsCount))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrlUnknownWords, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnlMiddleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnlImport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(scrlUnknownWords, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -185,36 +324,8 @@ public class FrmMain extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void mnuItemOpenFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuItemOpenFileActionPerformed
-        
-        String filename= "";
-        String dir = "";
-        
-        // Demonstrate "Open" dialog:
-        int res = fileChooser.showOpenDialog(null);
-        if (res == JFileChooser.APPROVE_OPTION) {
-          filename = fileChooser.getSelectedFile().getName();
-          dir = fileChooser.getCurrentDirectory().toString();
-        }
-                        
-        if(!filename.isEmpty()){
-            processSelectedFile(dir + File.separator + filename);
-        }
-        
-    }//GEN-LAST:event_mnuItemOpenFileActionPerformed
     
-    private void processSelectedFile(String filePath) {
-        try {
-            List<String> words = fileProcessor.process(filePath);
-            mediator.eventNewLoadedWords(words);
-            lblOpenFile.setText("Opened file: " + filePath);
-        } catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(null, "filename: " + filePath + "  ;  Error processing !!!");
-        }
         
-    }
-    
     /**
      * @param args the command line arguments
      */
@@ -245,12 +356,17 @@ public class FrmMain extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrmMain().setVisible(true);
+                FrmMain frm = new FrmMain();
+                frm.postConstruct();
+                frm.setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddToVoc;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel lblImportCount;
     private javax.swing.JLabel lblOpenFile;
     private javax.swing.JLabel lblUnknownWords;
     private javax.swing.JLabel lblUnknownWordsCount;
@@ -261,6 +377,7 @@ public class FrmMain extends javax.swing.JFrame {
     private javax.swing.JMenu mnuFile;
     private javax.swing.JMenuItem mnuItemOpenFile;
     private javax.swing.JPanel pnlBottom;
+    private javax.swing.JPanel pnlImport;
     private javax.swing.JPanel pnlMiddle;
     private javax.swing.JScrollPane scrlUnknownWords;
     // End of variables declaration//GEN-END:variables

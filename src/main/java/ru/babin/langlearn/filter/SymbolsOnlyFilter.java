@@ -18,10 +18,7 @@ public class SymbolsOnlyFilter implements TextFilter{
             return null;
         }
         // remove '--'
-        String strOut = strIn;
-        while(strOut.contains("--")){
-            strOut = strOut.replace("--", "-");
-        }
+        String strOut = removeMinuses(strIn);
         
         //
         StringBuilder sb = new StringBuilder();
@@ -31,7 +28,18 @@ public class SymbolsOnlyFilter implements TextFilter{
             }
         }
         
-        return sb.toString();
+        // remove '--'
+        strOut = removeMinuses(sb.toString());
+        
+        return strOut.isEmpty() ? null : strOut;
+    }
+    
+    private String removeMinuses(String strIn){
+        String strOut = strIn;
+        while(strOut.contains("--")){
+            strOut = strOut.replace("--", "-");
+        }
+        return strOut;
     }
 
     private boolean isAceptableChar(char charIn){
